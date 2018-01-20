@@ -9,6 +9,7 @@ android {
 		targetSdkVersion = TARGET_SDK_VERSION.toInteger()
 		versionCode = STORE_VERSION.toInteger()
 		versionName = VERSION_DISPLAY_NAME
+		multiDexEnabled true
 	}
 }
 

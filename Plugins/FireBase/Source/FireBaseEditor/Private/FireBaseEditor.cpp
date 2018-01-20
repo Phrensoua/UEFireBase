@@ -3,13 +3,9 @@
 #include "SlateBasics.h"
 #include "SlateExtras.h"
 #include "PropertyEditorModule.h"
-//#include "VungleSetting.h"
-#include "AdMobSetting.h"
 #include "GoogleSignSetting.h"
 #include "FacebookSignSetting.h"
 #include "TwitterSignSetting.h"
-//#include "UnitySetting.h"
-//#include "ChartBoostSetting.h"
 #include "ISettingsModule.h"
 
 #include "LevelEditor.h"
