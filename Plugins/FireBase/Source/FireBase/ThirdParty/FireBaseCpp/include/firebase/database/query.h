@@ -302,11 +302,12 @@ class Query {
   /// invalid.
   ///
   /// @deprecated Renamed to is_valid().
-  //FIREBASE_DEPRECATED virtual bool IsValid() const { return is_valid(); }
+  FIREBASE_DEPRECATED virtual bool IsValid() const { return is_valid(); }
 
  protected:
   /// @cond FIREBASE_APP_INTERNAL
   explicit Query(internal::QueryInternal* internal);
+  void SetInternal(internal::QueryInternal* internal);
   /// @endcond
 
  private:

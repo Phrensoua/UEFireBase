@@ -118,9 +118,7 @@ struct Notification {
 struct Message {
   /// Initialize the message.
   Message()
-      : time_to_live(0),
-        notification(nullptr),
-        notification_opened(false) {}
+      : time_to_live(0), notification(nullptr), notification_opened(false) {}
 
   /// Destructor.
   ~Message() { delete notification; }
@@ -148,10 +146,13 @@ struct Message {
       this->notification = nullptr;
     }
     this->notification_opened = other.notification_opened;
+    this->link = other.link;
     return *this;
   }
 
   /// Authenticated ID of the sender. This is a project number in most cases.
+  ///
+  /// Any value starting with google.com, goog. or gcm. are reserved.
   ///
   /// This field is only used for downstream messages received through
   /// Listener::OnMessage().
@@ -159,16 +160,29 @@ struct Message {
 
   /// This parameter specifies the recipient of a message.
   ///
-  /// For example it can be a registration token, a topic name, a IID or project
-  /// ID.
+  /// For example it can be a registration token, a topic name, an Instance ID
+  /// or project ID.
+  ///
+  /// For upstream messages use the format  PROJECT_ID@gcm.googleapis.com.
   ///
   /// This field is used for both upstream messages sent with
-  /// firebase::messaging:Send() and downstream messages received through
+  /// firebase::messaging::Send() and downstream messages received through
   /// Listener::OnMessage(). For upstream messages,
-  /// PROJECT_ID@gcm.googleapis.com or the more general IID format are accepted.
+  /// PROJECT_ID@gcm.googleapis.com or Instance ID are accepted.
   std::string to;
 
-  /// The collapse key used for collapsible messages.
+  /// This parameter identifies a group of messages (e.g., with collapse_key:
+  /// "Updates Available") that can be collapsed, so that only the last message
+  /// gets sent when delivery can be resumed.  This is intended to avoid sending
+  /// too many of the same messages when the device comes back online or becomes
+  /// active.
+  ///
+  /// Note that there is no guarantee of the order in which messages get sent.
+  ///
+  /// Note: A maximum of 4 different collapse keys is allowed at any given time.
+  /// This means a FCM connection server can simultaneously store 4 different
+  /// send-to-sync messages per client app. If you exceed this number, there is
+  /// no guarantee which 4 collapse keys the FCM connection server will keep.
   ///
   /// This field is only used for downstream messages received through
   /// Listener::OnMessage().
@@ -183,11 +197,7 @@ struct Message {
   /// Listener::OnMessage().
   std::map<std::string, std::string> data;
 
-  /// Binary payload. For webpush and non-json messages, this is the body of the
-  /// request entity.
-  ///
-  /// This field is only used for downstream messages received through
-  /// Listener::OnMessage().
+  /// Binary payload. This field is currently unused.
   std::string raw_data;
 
   /// Message ID. This can be specified by sender. Internally a hash of the
@@ -201,24 +211,55 @@ struct Message {
   std::string message_id;
 
   /// Equivalent with a content-type.
-  /// CCS uses "ack", "nack" for flow control and error handling.
-  /// "control" is used by CCS for connection control.
+  ///
+  /// Defined values:
+  ///   - "deleted_messages" - indicates the server had too many messages and
+  ///     dropped some, and the client should sync with his own server.
+  ///     Current limit is 100 messages stored.
+  ///   - "send_event" - indicates an upstream message has been pushed to the
+  ///     FCM server. It does not guarantee the upstream destination received
+  ///     it.
+  ///     Parameters: "message_id"
+  ///   - "send_error" - indicates an upstream message expired, without being
+  ///     sent to the FCM server.
+  ///     Parameters: "message_id" and "error"
+  ///
+  /// If this field is missing, the message is a regular message.
   ///
   /// This field is only used for downstream messages received through
   /// Listener::OnMessage().
   std::string message_type;
 
-  /// Priority level. Defines values are "normal" and "high".
-  /// By default messages are sent with normal priority.
+  /// Sets the priority of the message. Valid values are "normal" and "high." On
+  /// iOS, these correspond to APNs priority 5 and 10.
+  ///
+  /// By default, messages are sent with normal priority. Normal priority
+  /// optimizes the client app's battery consumption, and should be used unless
+  /// immediate delivery is required. For messages with normal priority, the app
+  /// may receive the message with unspecified delay.
+  ///
+  /// When a message is sent with high priority, it is sent immediately, and the
+  /// app can wake a sleeping device and open a network connection to your
+  /// server.
+  ///
+  /// For more information, see [Setting the priority of a message][1].
   ///
   /// This field is only used for downstream messages received through
   /// Listener::OnMessage().
+  ///
+  /// [1]:
+  /// https://firebase.google.com/docs/cloud-messaging/concept-options#setting-the-priority-of-a-message
   std::string priority;
 
-  /// Time to live, in seconds.
+  /// This parameter specifies how long (in seconds) the message should be kept
+  /// in FCM storage if the device is offline. The maximum time to live
+  /// supported is 4 weeks, and the default value is 4 weeks. For more
+  /// information, see [Setting the lifespan of a message][1].
   ///
   /// This field is only used for downstream messages received through
   /// Listener::OnMessage().
+  ///
+  /// [1]: https://firebase.google.com/docs/cloud-messaging/concept-options#ttl
   int32_t time_to_live;
 
   /// Error code. Used in "nack" messages for CCS, and in responses from the
@@ -252,6 +293,12 @@ struct Message {
   /// notification in the OS system tray. If the message was received this way
   /// this flag is set to true.
   bool notification_opened;
+
+  /// The link into the app from the message.
+  ///
+  /// This field is only used for downstream messages received through
+  /// Listener::OnMessage().
+  std::string link;
 };
 
 /// @brief Base class used to receive messages from Firebase Cloud Messaging.
@@ -296,6 +343,46 @@ InitResult Initialize(const App& app, Listener* listener);
 ///
 /// @note On Android, the services will not be shut down by this method.
 void Terminate();
+
+/// Determines if automatic token registration during initalization is enabled.
+///
+/// @return true if auto token registration is enabled and false if disabled.
+bool IsTokenRegistrationOnInitEnabled();
+
+/// Enable or disable token registration during initialization of Firebase Cloud
+/// Messaging.
+///
+/// This token is what identifies the user to Firebase, so disabling this avoids
+/// creating any new identity and automatically sending it to Firebase, unless
+/// consent has been granted.
+///
+/// If this setting is enabled, it triggers the token registration refresh
+/// immediately. This setting is persisted across app restarts and overrides the
+/// setting "firebase_messaging_auto_init_enabled" specified in your Android
+/// manifest (on Android) or Info.plist (on iOS).
+///
+/// <p>By default, token registration during initialization is enabled.
+///
+/// The registration happens before you can programmatically disable it, so
+/// if you need to change the default, (for example, because you want to prompt
+/// the user before FCM generates/refreshes a registration token on app
+/// startup), add to your application’s manifest:
+///
+/// @code
+/// <meta-data android:name="firebase_messaging_auto_init_enabled"
+/// android:value="false" />
+/// @endcode
+///
+/// or on iOS to your info.plist:
+///
+/// @code
+/// <key>FirebaseMessagingAutoInitEnabled</key>
+/// <false/>
+/// @endcode
+///
+/// @param enable sets if a registration token should be requested on
+/// initialization.
+void SetTokenRegistrationOnInitEnabled(bool enable);
 
 /// @brief Set the listener for events from the Firebase Cloud Messaging
 /// servers.
@@ -343,14 +430,14 @@ void Unsubscribe(const char* topic);
 
 class PollableListenerImpl;
 
-/// @brief A listener that can be polled to consume pending Messages.
+/// @brief A listener that can be polled to consume pending `Message`s.
 ///
 /// This class is intended to be used with applications that have a main loop
 /// that frequently updates, such as in the case of a game that has a main
 /// loop that updates 30 to 60 times a second. Rather than respond to incoming
-/// messages and tokens via the OnMessage virtual function, this class will
+/// messages and tokens via the `OnMessage` virtual function, this class will
 /// queue up the message internally in a thread-safe manner so that it can be
-/// consumed with PollMessage. For example:
+/// consumed with `PollMessage`. For example:
 ///
 ///     ::firebase::messaging::PollableListener listener;
 ///     ::firebase::messaging::Initialize(app, &listener);
@@ -376,19 +463,19 @@ class PollableListener : public Listener {
   /// @brief The required virtual destructor.
   virtual ~PollableListener();
 
-  /// @brief An implementation of OnMessages which adds the incoming messages to
-  /// a queue, which can be consumed by calling PollMessage.
+  /// @brief An implementation of `OnMessage` which adds the incoming messages
+  /// to a queue, which can be consumed by calling `PollMessage`.
   virtual void OnMessage(const Message& message);
 
-  /// @brief An implementation of OnTokenReceived which stores the incoming
-  /// token so that it can be consumed by calling PollRegistrationToken.
+  /// @brief An implementation of `OnTokenReceived` which stores the incoming
+  /// token so that it can be consumed by calling `PollRegistrationToken`.
   virtual void OnTokenReceived(const char* token);
 
   /// @brief Returns the first message queued up, if any.
   ///
   /// If one or more messages has been received, the first message in the
   /// queue will be popped and used to populate the `message` argument and the
-  /// function will return true. If there are no pending messages, false is
+  /// function will return `true`. If there are no pending messages, `false` is
   /// returned. This function should be called in a loop until all messages have
   /// been consumed, like so:
   ///
@@ -397,19 +484,19 @@ class PollableListener : public Listener {
   ///       LogMessage("Received a new message");
   ///     }
   ///
-  /// @param[out] message The Message struct to be populated. If there were no
-  /// pending messages, the Message is not modified.
+  /// @param[out] message The `Message` struct to be populated. If there were no
+  /// pending messages, `message` is not modified.
   ///
-  /// @return Returns true if there was a pending message, false otherwise.
+  /// @return Returns `true` if there was a pending message, `false` otherwise.
   bool PollMessage(Message* message);
 
   /// @brief Returns the registration key, if a new one has been received.
   ///
   /// When a new registration token is received, it is cached internally and can
-  /// be retrieved by calling PollRegistrationToken. The cached registration
+  /// be retrieved by calling `PollRegistrationToken`. The cached registration
   /// token will be used to populate the `token` argument, then the cache will
-  /// be cleared and the function will return true. If there is no cached
-  /// registration token this function retuns false.
+  /// be cleared and the function will return `true`. If there is no cached
+  /// registration token this function retuns `false`.
   ///
   ///     std::string token;
   ///     if (listener.PollRegistrationToken(&token)) {
@@ -417,13 +504,22 @@ class PollableListener : public Listener {
   ///     }
   ///
   /// @param[out] token A string to be populated with the new token if one has
-  /// been recieved. If there were no new token, the string is left unmodified.
+  /// been received. If there were no new token, the string is left unmodified.
   ///
-  /// @return Returns true if there was a new token, false otherwise.
-  bool PollRegistrationToken(std::string* token);
+  /// @return Returns `true` if there was a new token, `false` otherwise.
+  bool PollRegistrationToken(std::string* token) {
+    bool got_token;
+    std::string token_received = PollRegistrationToken(&got_token);
+    if (got_token) {
+      *token = token_received;
+    }
+    return got_token;
+  }
 
  private:
-  // The implementation of the PollableListener.
+  std::string PollRegistrationToken(bool* got_token);
+
+  // The implementation of the `PollableListener`.
   PollableListenerImpl* impl_;
 };
 

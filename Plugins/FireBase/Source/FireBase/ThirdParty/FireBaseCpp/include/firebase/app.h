@@ -13,6 +13,7 @@
 namespace firebase {
 
 // Predeclarations.
+
 namespace auth {
 class Auth;
 }  // namespace auth
@@ -21,6 +22,17 @@ namespace internal {
 class DatabaseInternal;
 }  // namespace internal
 }  // namespace database
+namespace functions {
+namespace internal {
+class FunctionsInternal;
+}  // namespace internal
+}  // namespace functions
+namespace internal {
+class InstanceId;
+}  // namespace internal
+namespace instance_id {
+class InstanceId;
+}  // namespace instance_id
 namespace storage {
 namespace internal {
 class StorageInternal;
@@ -162,8 +174,22 @@ class AppOptions {
   const char* project_id() const { return project_id_.c_str(); }
 
 
+  /// @brief Load options from a config string.
+  ///
+  /// @param[in] config A JSON string that contains Firebase configuration i.e.
+  /// the content of the downloaded google-services.json file.
+  /// @param[out] options Optional: If provided, load options into it.
+  ///
+  /// @returns An instance containing the loaded options if successful.
+  /// If the options argument to this function is null, this method returns an
+  /// AppOptions instance allocated from the heap.
+  static AppOptions* LoadFromJsonConfig(const char* config,
+                                        AppOptions* options = nullptr);
+
   /// @cond FIREBASE_APP_INTERNAL
  private:
+  /// Application package name (e.g Android package name or iOS bundle ID).
+  std::string package_name_;
   /// API key used to communicate with Google Servers.
   std::string api_key_;
   /// ID of the app.
@@ -213,8 +239,9 @@ class App {
   /// @note This method is specific to non-Android implementations.
   ///
   /// @returns New App instance, the App should not be destroyed for the
-  /// lifetime of the application.
-  static App* Create() { return Create(AppOptions()); }
+  /// lifetime of the application.  If default options can't be loaded this
+  /// will return null.
+  static App* Create();
 #endif  // !defined(__ANDROID__) || defined(DOXYGEN)
 
 #if defined(__ANDROID__) || defined(DOXYGEN)
@@ -228,7 +255,8 @@ class App {
   /// allow Firebase services to interact with the Android application.
   ///
   /// @returns New App instance. The App should not be destroyed for the
-  /// lifetime of the application.
+  /// lifetime of the application.  If default options can't be loaded this
+  /// will return null.
   static App* Create(JNIEnv* jni_env, jobject activity) {
     return Create(AppOptions(), jni_env, activity);
   }
@@ -350,6 +378,9 @@ class App {
   /// @cond FIREBASE_APP_INTERNAL
   friend class auth::Auth;
   friend class database::internal::DatabaseInternal;
+  friend class functions::internal::FunctionsInternal;
+  friend class instance_id::InstanceId;
+  friend class internal::InstanceId;
   friend class storage::internal::StorageInternal;
 
   /// Construct the object.

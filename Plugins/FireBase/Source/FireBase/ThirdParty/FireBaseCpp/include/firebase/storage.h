@@ -6,11 +6,16 @@
 #include <string>
 
 #include "firebase/app.h"
+#include "firebase/internal/common.h"
 #include "firebase/storage/common.h"
 #include "firebase/storage/controller.h"
 #include "firebase/storage/listener.h"
 #include "firebase/storage/metadata.h"
 #include "firebase/storage/storage_reference.h"
+
+#if !defined(DOXYGEN)
+FIREBASE_APP_REGISTER_CALLBACKS_REFERENCE(storage)
+#endif  // !defined(DOXYGEN)
 
 namespace firebase {
 
@@ -19,6 +24,7 @@ namespace storage {
 
 namespace internal {
 class StorageInternal;
+class MetadataInternal;
 }  // namespace internal
 
 class StorageReference;
@@ -116,6 +122,7 @@ class Storage {
  private:
   /// @cond FIREBASE_APP_INTERNAL
   friend class Metadata;
+  friend class internal::MetadataInternal;
 
   Storage(::firebase::App* app, const char* url);
   Storage(const Storage& src);

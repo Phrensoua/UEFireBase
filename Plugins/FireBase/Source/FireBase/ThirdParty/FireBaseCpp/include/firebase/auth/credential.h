@@ -3,6 +3,7 @@
 #ifndef FIREBASE_AUTH_CLIENT_CPP_SRC_INCLUDE_FIREBASE_AUTH_CREDENTIAL_H_
 #define FIREBASE_AUTH_CLIENT_CPP_SRC_INCLUDE_FIREBASE_AUTH_CREDENTIAL_H_
 
+#include <stdint.h>
 #include <string>
 #include "firebase/internal/common.h"
 
@@ -37,6 +38,7 @@ class Credential {
   friend class JniAuthPhoneListener;
   friend class OAuthProvider;
   friend class PhoneAuthProvider;
+  friend class PlayGamesAuthProvider;
   friend class TwitterAuthProvider;
   /// @endcond
 
@@ -67,7 +69,7 @@ class Credential {
   /// @deprecated Renamed to provider().
   FIREBASE_DEPRECATED std::string Provider() const { return provider(); }
 
-  /// Get whether this credential iss valid. A credential can be
+  /// Get whether this credential is valid. A credential can be
   /// invalid in an error condition, e.g. empty username/password.
   ///
   /// @returns True if the credential is valid, false otherwise.
@@ -137,6 +139,17 @@ class GoogleAuthProvider {
                                   const char* access_token);
 };
 
+/// @brief Use a server auth code provided by Google Play Games to authenticate.
+class PlayGamesAuthProvider {
+ public:
+  /// Generate a credential from the given Server Auth Code.
+  ///
+  /// @param server_auth_code Play Games Sign in Server Auth Code.
+  ///
+  /// @returns New Credential.
+  static Credential GetCredential(const char* server_auth_code);
+};
+
 /// @brief Use a token and secret provided by Twitter to authenticate.
 class TwitterAuthProvider {
  public:
@@ -180,6 +193,8 @@ class OAuthProvider {
 /// Possible verification flows:
 /// (1) User manually enters verification code.
 ///     - App calls @ref VerifyPhoneNumber.
+///     - Web verification page is displayed to user where they may need to
+///       solve a CAPTCHA. [iOS only].
 ///     - Auth server sends the verification code via SMS to the provided
 ///       phone number. App recieves verification id via Listener::OnCodeSent().
 ///     - User receives SMS and enters verification code in app's GUI.
@@ -432,7 +447,7 @@ class PhoneAuthProvider {
   ///    number to verify. If not-NULL, bypass the verification session deduping
   ///    and force resending a new SMS.
   ///    This token is received in @ref Listener::OnCodeSent.
-  ///    This should only be used when the user presses a “Resend SMS” button.
+  ///    This should only be used when the user presses a "Resend SMS" button.
   /// @param[in,out] listener Class that receives notification whenever an SMS
   ///    verification event occurs. See sample code at top of class.
   void VerifyPhoneNumber(const char* phone_number,

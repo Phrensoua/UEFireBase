@@ -107,8 +107,14 @@ static const uint64_t kDefaultCacheExpiration = 60 * 60 * 12;
 /// values.
 struct ConfigKeyValue {
   /// The lookup key string.
+  ///
+  /// @note Ensure this string stays valid for the duration of the
+  /// call to SetDefaults.
   const char* key;
   /// The value string to be stored.
+  ///
+  /// @note Ensure this string stays valid for the duration of the
+  /// call to SetDefaults.
   const char* value;
 };
 
@@ -116,9 +122,15 @@ struct ConfigKeyValue {
 /// default values.
 struct ConfigKeyValueVariant {
   /// The lookup key string.
+  ///
+  /// @note Ensure this string stays valid for the duration of the
+  /// call to SetDefaults.
   const char* key;
   /// The value to be stored. The type of the Variant determines the type of
   /// default data for the given key.
+  ///
+  /// @note If you use a Variant of type StaticString, ensure it stays
+  /// valid for the duration of the call to SetDefaults.
   Variant value;
 };
 

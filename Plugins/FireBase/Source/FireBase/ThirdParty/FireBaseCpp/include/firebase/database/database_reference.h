@@ -289,9 +289,8 @@ class DatabaseReference : public Query {
   /// @note Only one RunTransaction() should be running on a given database
   /// location at the same time.
   ///
-  /// @note This version (that accepts a simple function pointer without a
-  /// context) is only available when using stlport and std::function is not
-  /// available.
+  /// @note This version (that accepts a simple function pointer) is only
+  /// available when using stlport and std::function is not available.
   Future<DataSnapshot> RunTransaction(DoTransaction transaction_function,
                                       bool trigger_local_events = true);
 #endif  // !defined(FIREBASE_USE_STD_FUNCTION) || defined(DOXYGEN)

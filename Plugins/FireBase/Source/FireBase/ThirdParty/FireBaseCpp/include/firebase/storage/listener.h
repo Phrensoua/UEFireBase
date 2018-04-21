@@ -8,6 +8,14 @@
 namespace firebase {
 namespace storage {
 
+/// @cond FIREBASE_APP_INTERNAL
+namespace internal {
+class ListenerInternal;
+class StorageReferenceInternal;
+class RestOperation;
+}  // namespace internal
+/// @endcond
+
 /// @brief Base class used to receive pause and progress events on a running
 /// read or write operation.
 ///
@@ -19,6 +27,9 @@ namespace storage {
 /// and OnProgress() will be called periodically as the transfer makes progress.
 class Listener {
  public:
+  /// @brief Constructor.
+  Listener();
+
   /// @brief Virtual destructor.
   virtual ~Listener();
 
@@ -33,6 +44,15 @@ class Listener {
   /// @param[in] controller A controller that can be used to check the status
   /// and make changes to the ongoing operation.
   virtual void OnProgress(Controller* controller) = 0;
+
+ private:
+  /// @cond FIREBASE_APP_INTERNAL
+  friend class internal::StorageReferenceInternal;
+  friend class internal::RestOperation;
+
+  // Platform specific data.
+  internal::ListenerInternal* impl_;
+  /// @endcond
 };
 
 }  // namespace storage
