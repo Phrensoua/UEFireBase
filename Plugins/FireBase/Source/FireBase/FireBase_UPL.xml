@@ -30,13 +30,13 @@
 	<AARImports>
         
     
-    <insertValue value="com.google.firebase,firebase-core,11.0.1" />
+    <insertValue value="com.google.firebase,firebase-core,11.0.4" />
     <insertNewline/>
     
-    <insertValue value="com.google.firebase,firebase-auth,11.0.1" />
+    <insertValue value="com.google.firebase,firebase-auth,11.0.4" />
     <insertNewline/>
     
-    <insertValue value="com.google.firebase,firebase-database,11.0.1" />
+    <insertValue value="com.google.firebase,firebase-database,11.0.4" />
     <insertNewline/>
     
     <insertValue value="repository $S(PluginDir)/ThirdParty/Android"/>
