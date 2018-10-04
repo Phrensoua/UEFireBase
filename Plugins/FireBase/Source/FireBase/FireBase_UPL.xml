@@ -54,11 +54,11 @@
     <insertValue value="com.twitter.sdk.android,twitter-core,3.1.1" />
     <insertNewline/>
     
-    <replace find="play-services-ads,9.8.0" with="play-services-ads,11.0.1"/>
-    <replace find="play-services-auth,9.8.0" with="play-services-auth,11.0.1"/>
-    <replace find="play-services-games,9.8.0" with="play-services-games,11.0.1"/>
-    <replace find="play-services-nearby,9.8.0" with="play-services-nearby,11.0.1"/>
-		<replace find="play-services-plus,9.8.0" with="play-services-plus,11.0.1"/>
+    <replace find="play-services-ads,9.8.0" with="play-services-ads,11.8.0"/>
+    <replace find="play-services-auth,9.8.0" with="play-services-auth,11.8.0"/>
+    <replace find="play-services-games,9.8.0" with="play-services-games,11.8.0"/>
+    <replace find="play-services-nearby,9.8.0" with="play-services-nearby,11.8.0"/>
+		<replace find="play-services-plus,9.8.0" with="play-services-plus,11.8.0"/>
   
 	</AARImports>
 
