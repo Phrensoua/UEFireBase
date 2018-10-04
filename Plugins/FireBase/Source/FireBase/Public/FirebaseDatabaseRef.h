@@ -30,7 +30,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "FireBase")
 	UFirebaseDatabaseRef* PushChild();
 
-	UFUNCTION(BlueprintPure, Category = "FireBase")
+	//UFUNCTION(BlueprintPure, Category = "FireBase")
 	bool IsValid() override;
 
 	UFUNCTION(BlueprintPure, Category = "FireBase")

@@ -63,13 +63,7 @@ public class FireBase : ModuleRules
 
         System.Console.WriteLine("version:" + strEngineVersion);
 
-        PublicIncludePaths.AddRange(
-			new string[] {
-				"FireBase/Public"
-				
-				// ... add public include paths required here ...
-			}
-			);
+        
 
         PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -104,10 +98,6 @@ public class FireBase : ModuleRules
 
         if (Target.Platform == UnrealTargetPlatform.Android)
         {
-
-
-            PrivateIncludePaths.Add("Private/Common");
-            PrivateIncludePaths.Add("Private/Android");
             PrivateIncludePaths.Add("FireBase/ThirdParty/FireBaseCpp/include");
 
             PrivateDependencyModuleNames.AddRange(
@@ -131,15 +121,7 @@ public class FireBase : ModuleRules
             }
 
             string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-
-            if (EngineMinorVersion == "18")
-            {
-                AdditionalPropertiesForReceipt.Add(new ReceiptProperty("AndroidPlugin", Path.Combine(PluginPath, "FireBase418_UPL.xml")));
-            }
-            else
-            {
-                AdditionalPropertiesForReceipt.Add(new ReceiptProperty("AndroidPlugin", Path.Combine(PluginPath, "FireBase_UPL.xml")));
-            } 
+            AdditionalPropertiesForReceipt.Add(new ReceiptProperty("AndroidPlugin", Path.Combine(PluginPath, "FireBase_UPL.xml")));
         }
         else if (Target.Platform == UnrealTargetPlatform.Win32 || Target.Platform == UnrealTargetPlatform.Win64)
         {
