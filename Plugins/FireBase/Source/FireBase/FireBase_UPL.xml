@@ -45,7 +45,7 @@
     <insertValue value="com.util,firebasehelper,1.0.0" />
     <insertNewline/>
 
-    <insertValue value="com.android,volley,1.0.0" />
+    <insertValue value="com.android.volley, volley,1.1.1" />
     <insertNewline/>
     
     <insertValue value="com.facebook.android,facebook-android-sdk,4.26.0" />

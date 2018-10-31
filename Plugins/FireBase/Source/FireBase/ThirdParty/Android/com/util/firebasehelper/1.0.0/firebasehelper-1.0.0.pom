@@ -6,14 +6,4 @@
   <artifactId>firebasehelper</artifactId>
   <version>1.0.0</version>
   <packaging>aar</packaging>
-  
-  <dependencies>
-	<dependency>
-      <groupId>com.google.android.gms</groupId>
-      <artifactId>play-services-clearcut</artifactId>
-      <version>9.8.0</version>
-      <scope>compile</scope>
-      <type>aar</type>
-    </dependency>
-  </dependencies>
 </project>
