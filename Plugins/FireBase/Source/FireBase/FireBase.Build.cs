@@ -18,11 +18,11 @@ public class FireBase : ModuleRules
     string GetEngineDirectory()
     {
         string magicKey = "UE_ENGINE_DIRECTORY=";
-        for (var i = 0; i < Definitions.Count; i++)
+        for (var i = 0; i < PublicDefinitions.Count; i++)
         {
-            if (Definitions[i].IndexOf(magicKey) >= 0)
+            if (PublicDefinitions[i].IndexOf(magicKey) >= 0)
             {
-                return Definitions[i].Substring(magicKey.Length + 1);
+                return PublicDefinitions[i].Substring(magicKey.Length + 1);
             }
         }
 
@@ -121,7 +121,7 @@ public class FireBase : ModuleRules
             }
 
             string PluginPath = Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath);
-            AdditionalPropertiesForReceipt.Add(new ReceiptProperty("AndroidPlugin", Path.Combine(PluginPath, "FireBase_UPL.xml")));
+            AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(PluginPath, "FireBase_UPL.xml"));
         }
         else if (Target.Platform == UnrealTargetPlatform.Win32 || Target.Platform == UnrealTargetPlatform.Win64)
         {
